@@ -23,6 +23,6 @@ jobs:
         password: ${{ secrets.SFTP_PASSWORD }}
         server: ${{ secrets.SFTP_SERVER }}
         port: 21098 
-        local_path: './dist/'
+        local_path: 'dist/*'
         remote_path: ${{ secrets.SFTP_REMOTE_PATH }}
         sftp_only: true
