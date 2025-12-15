@@ -2,6 +2,7 @@
 
 App de gestión de dieta cetogénica para parejas, diseñada para 30 días de seguimiento con perfiles diferenciados.
 
+
 ## 🥑 Características
 
 - **Gestión de Perfiles**: Usuario A (Keto estándar) y Usuario B (Keto sin hojas crudas)
