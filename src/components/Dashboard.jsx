@@ -329,16 +329,17 @@ function Dashboard({
 
             {/* Consumption Modal */}
             {consumingRecipe && (
-                <div className="modal-overlay">
-                    <div className="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <RecipeEditor
-                            initialRecipe={consumingRecipe}
-                            onSave={confirmConsumption}
-                            onCancel={() => setConsumingRecipe(null)}
-                            apiKey={apiKey}
-                        />
-                    </div>
-                </div>
+                <Modal
+                    onClose={() => setConsumingRecipe(null)}
+                    className="max-w-2xl max-h-[80vh]"
+                >
+                    <RecipeEditor
+                        initialRecipe={consumingRecipe}
+                        onSave={confirmConsumption}
+                        onCancel={() => setConsumingRecipe(null)}
+                        apiKey={apiKey}
+                    />
+                </Modal>
             )}
         </div>
     );

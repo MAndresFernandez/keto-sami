@@ -188,19 +188,23 @@ function RecipeList({
 
             {/* Editor Modal */}
             {(isCreating || editingRecipe) && (
-                <div className="modal-overlay">
-                    <div className="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <RecipeEditor
-                            initialRecipe={editingRecipe}
-                            onSave={handleSaveAndClose}
-                            onCancel={() => {
-                                setEditingRecipe(null);
-                                setIsCreating(false);
-                            }}
-                            apiKey={apiKey}
-                        />
-                    </div>
-                </div>
+                <Modal
+                    onClose={() => {
+                        setEditingRecipe(null);
+                        setIsCreating(false);
+                    }}
+                    className="max-w-2xl max-h-[80vh]" // Reduced height for mobile safety
+                >
+                    <RecipeEditor
+                        initialRecipe={editingRecipe}
+                        onSave={handleSaveAndClose}
+                        onCancel={() => {
+                            setEditingRecipe(null);
+                            setIsCreating(false);
+                        }}
+                        apiKey={apiKey}
+                    />
+                </Modal>
             )}
         </div>
     );
