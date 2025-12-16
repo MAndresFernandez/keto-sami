@@ -137,26 +137,71 @@ function RecipeEditor({
                 </div>
             )}
 
-            {/* AI Magic Button */}
+            {/* AI Magic Section */}
             {!initialRecipe && (
-                <div className="glass-card p-4 border border-emerald-500/30 bg-emerald-500/5 mb-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
-                                <Camera className="w-5 h-5 text-white" />
+                <div className="space-y-4 mb-6">
+                    {/* Text Magic */}
+                    <div className="glass-card p-4 border border-emerald-500/30 bg-emerald-500/5">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+                                <span className="text-xl">✨</span>
                             </div>
                             <div>
-                                <p className="font-bold text-white">Generar con IA</p>
-                                <p className="text-xs text-gray-400">Sube una foto y autocompletaré todo</p>
+                                <p className="font-bold text-white">Autocompletar Mágico</p>
+                                <p className="text-xs text-gray-400">Describe tu plato y calcularé todo por ti</p>
                             </div>
                         </div>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Ej: Omelette de jamón y queso con café"
+                                className="input text-sm flex-1"
+                                id="magic-text-input"
+                            />
+                            <button
+                                onClick={async () => {
+                                    const text = document.getElementById('magic-text-input').value;
+                                    if (!text) return;
+
+                                    if (!apiKey) {
+                                        alert("Falta API Key");
+                                        return;
+                                    }
+
+                                    setLoading(true);
+                                    try {
+                                        // Dynamic import to avoid circular dependencies if any
+                                        const { generateRecipeFromText } = await import('../services/openai');
+                                        const aiRecipe = await generateRecipeFromText(text, apiKey);
+                                        setRecipe(prev => ({
+                                            ...prev,
+                                            ...aiRecipe,
+                                            id: prev.id
+                                        }));
+                                    } catch (err) {
+                                        alert("Error: " + err.message);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="btn btn-primary whitespace-nowrap"
+                                disabled={loading}
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generar'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Image Magic Option (Collapsed/Smaller) */}
+                    <div className="text-center">
+                        <p className="text-xs text-gray-500 mb-2">- O sube una foto -</p>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-secondary btn-sm text-xs"
                             disabled={loading}
                         >
-                            <ImageIcon className="w-4 h-4" />
-                            Subir Foto
+                            <Camera className="w-3 h-3 mr-2" />
+                            Escanear Foto de Comida
                         </button>
                         <input
                             type="file"

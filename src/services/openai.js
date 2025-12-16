@@ -78,3 +78,79 @@ export const generateRecipeFromImage = async (base64Image, apiKey) => {
         throw error;
     }
 };
+
+export const generateRecipeFromText = async (description, apiKey) => {
+    if (!apiKey) throw new Error("API Key faltante");
+
+    const prompt = `
+    Genera una receta Keto completa basada en esta descripción: "${description}".
+    
+    Reglas importantes y rol de experto:
+    1. Actúa como nutricionista experto en Keto.
+    2. Calcula/Estima los MACROS (Kcal, Grasa, Proteínas, Carbos) para UNA porción promedio de este plato.
+    3. Si la descripción es vaga (ej: "pollo con crema"), asume una receta estándar keto-friendly.
+    4. Determina 'isHiddenVegFriendly':
+       - TRUE si NO tiene hojas crudas y los vegetales están cocidos.
+       - FALSE si incluye ensalada cruda.
+    
+    Formato JSON Requerido (responde SOLO con esto):
+    {
+      "name": "Nombre atractivo del plato",
+      "category": "carnes|vegetales|ensaladas|huevos|panadería|acompañamientos",
+      "image": "emoji relacionado",
+      "prepTime": minutos_estimados,
+      "servings": 1, 
+      "isHiddenVegFriendly": boolean,
+      "macros": {
+        "calories": numero,
+        "fat": numero,
+        "protein": numero,
+        "carbs": numero
+      },
+      "ingredients": [
+        { "item": "ingrediente", "amount": "cantidad (ej: 200g)", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
+      ],
+      "instructions": [
+        "Paso 1", "Paso 2"
+      ]
+    }
+  `;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [
+                    {
+                        role: "system",
+                        content: "Eres un asistente experto en cocina Keto y nutrición."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                max_tokens: 1000,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        const content = data.choices[0].message.content;
+        return JSON.parse(content);
+
+    } catch (error) {
+        console.error("Error generating recipe from text:", error);
+        throw error;
+    }
+};
