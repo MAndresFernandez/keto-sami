@@ -617,15 +617,15 @@ export const userProfiles = {
 };
 
 // Helper: obtener receta por ID
-export const getRecipeById = (id) => recipes.find(r => r.id === id);
+export const getRecipeById = (recipes, id) => recipes.find(r => r.id === id);
 
 // Helper: obtener recetas aptas para Usuario B
-export const getHiddenVegFriendlyRecipes = () => recipes.filter(r => r.isHiddenVegFriendly);
+export const getHiddenVegFriendlyRecipes = (recipes) => recipes.filter(r => r.isHiddenVegFriendly);
 
 // Helper: obtener sustituto para una receta
-export const getSubstituteRecipe = (recipe) => {
+export const getSubstituteRecipe = (recipes, recipe) => {
     if (recipe.substituteFor) {
-        return getRecipeById(recipe.substituteFor);
+        return getRecipeById(recipes, recipe.substituteFor);
     }
     // Si no tiene sustituto definido, buscar una similar de la misma categoría
     return recipes.find(r =>
@@ -636,12 +636,14 @@ export const getSubstituteRecipe = (recipe) => {
 };
 
 // Helper: filtrar recetas por categoría
-export const getRecipesByCategory = (category) => recipes.filter(r => r.category === category);
+export const getRecipesByCategory = (recipes, category) => recipes.filter(r => r.category === category);
 
 // Generar menú automático para la semana
-export const generateWeeklyMenu = (userProfile) => {
+export const generateWeeklyMenu = (userProfile, recipes) => {
+    // Usar las recetas pasadas como argumento
+    // Determinar disponibles según perfil
     const availableRecipes = userProfile.hiddenVegRequired
-        ? getHiddenVegFriendlyRecipes()
+        ? recipes.filter(r => r.isHiddenVegFriendly)
         : recipes;
 
     const menu = {};
@@ -650,16 +652,16 @@ export const generateWeeklyMenu = (userProfile) => {
     weekDays.forEach((day, index) => {
         // Seleccionar almuerzo
         let lunch = selectRandomRecipe(availableRecipes, usedRecipes, ['carnes', 'huevos']);
-        usedRecipes.add(lunch.id);
+        if (lunch) usedRecipes.add(lunch.id);
 
         // Seleccionar cena
         let dinner = selectRandomRecipe(availableRecipes, usedRecipes, ['carnes', 'vegetales']);
-        usedRecipes.add(dinner.id);
+        if (dinner) usedRecipes.add(dinner.id);
 
         menu[index] = {
             day: day,
-            lunch: lunch,
-            dinner: dinner
+            lunch: lunch || availableRecipes[0], // Fallback simple
+            dinner: dinner || availableRecipes[1]
         };
     });
 
@@ -682,6 +684,8 @@ const selectRandomRecipe = (pool, usedIds, preferredCategories) => {
     if (candidates.length === 0) {
         candidates = pool;
     }
+
+    if (candidates.length === 0) return null;
 
     return candidates[Math.floor(Math.random() * candidates.length)];
 };

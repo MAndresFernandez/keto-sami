@@ -9,7 +9,6 @@ import {
     Check
 } from 'lucide-react';
 import {
-    recipes,
     weekDays,
     generateWeeklyMenu,
     getHiddenVegFriendlyRecipes
@@ -20,7 +19,8 @@ function WeeklyPlanner({
     currentProfile,
     weeklyPlan,
     setWeeklyPlan,
-    setShoppingItems
+    setShoppingItems,
+    allRecipes
 }) {
     const [selectedDay, setSelectedDay] = useState(null);
     const [selectedMeal, setSelectedMeal] = useState(null);
@@ -32,7 +32,7 @@ function WeeklyPlanner({
 
     // Generar menú automático
     const handleGenerateMenu = () => {
-        const newMenu = generateWeeklyMenu(currentProfile);
+        const newMenu = generateWeeklyMenu(currentProfile, allRecipes);
         setWeeklyPlan(newMenu);
 
         // Actualizar lista de compras
@@ -112,8 +112,8 @@ function WeeklyPlanner({
 
     // Filtrar recetas según perfil
     const availableRecipes = currentProfile.hiddenVegRequired
-        ? getHiddenVegFriendlyRecipes()
-        : recipes;
+        ? getHiddenVegFriendlyRecipes(allRecipes)
+        : allRecipes;
 
     return (
         <div className="space-y-6 animate-fade-in">

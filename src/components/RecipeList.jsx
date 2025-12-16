@@ -4,17 +4,29 @@ import {
     Filter,
     ChevronDown,
     Leaf,
-    AlertTriangle
+    AlertTriangle,
+    Plus,
+    Edit,
+    Trash
 } from 'lucide-react';
-import { recipes, getHiddenVegFriendlyRecipes } from '../data/recipes';
+import { getHiddenVegFriendlyRecipes } from '../data/recipes';
 import RecipeCard from './RecipeCard';
+import RecipeEditor from './RecipeEditor';
 
-function RecipeList({ currentProfile }) {
+function RecipeList({
+    currentProfile,
+    allRecipes,
+    handleSaveRecipe,
+    handleDeleteRecipe,
+    apiKey
+}) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showOnlyHiddenVegFriendly, setShowOnlyHiddenVegFriendly] = useState(
         currentProfile.hiddenVegRequired
     );
+    const [editingRecipe, setEditingRecipe] = useState(null);
+    const [isCreating, setIsCreating] = useState(false);
 
     const categories = [
         { id: 'all', label: 'Todas', icon: '🍽️' },
@@ -27,7 +39,7 @@ function RecipeList({ currentProfile }) {
     ];
 
     // Filtrar recetas
-    const filteredRecipes = recipes.filter(recipe => {
+    const filteredRecipes = allRecipes.filter(recipe => {
         // Filtro por búsqueda
         const matchesSearch = recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             recipe.ingredients.some(ing => ing.item.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -41,12 +53,31 @@ function RecipeList({ currentProfile }) {
         return matchesSearch && matchesCategory && matchesHiddenVeg;
     });
 
+    const handleEditStart = (recipe) => {
+        setEditingRecipe(recipe);
+    };
+
+    const handleSaveAndClose = (savedRecipe) => {
+        handleSaveRecipe(savedRecipe);
+        setEditingRecipe(null);
+        setIsCreating(false);
+    };
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold">Recetas Keto</h2>
-                <p className="text-sm text-gray-400">{filteredRecipes.length} recetas disponibles</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold">Recetas Keto</h2>
+                    <p className="text-sm text-gray-400">{filteredRecipes.length} recetas disponibles</p>
+                </div>
+                <button
+                    onClick={() => setIsCreating(true)}
+                    className="btn btn-primary"
+                >
+                    <Plus className="w-5 h-5" />
+                    <span className="hidden sm:inline">Nueva Receta</span>
+                </button>
             </div>
 
             {/* Search */}
@@ -68,8 +99,8 @@ function RecipeList({ currentProfile }) {
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${selectedCategory === cat.id
-                                ? 'bg-emerald-500 text-white'
-                                : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
                             }`}
                     >
                         <span>{cat.icon}</span>
@@ -111,11 +142,32 @@ function RecipeList({ currentProfile }) {
             <div className="space-y-4">
                 {filteredRecipes.length > 0 ? (
                     filteredRecipes.map(recipe => (
-                        <RecipeCard
-                            key={recipe.id}
-                            recipe={recipe}
-                            currentProfile={currentProfile}
-                        />
+                        <div key={recipe.id} className="relative group">
+                            <RecipeCard
+                                recipe={recipe}
+                                currentProfile={currentProfile}
+                            />
+                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleEditStart(recipe);
+                                    }}
+                                    className="p-2 bg-slate-800 rounded-full hover:bg-slate-700 text-emerald-400 shadow-lg"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleDeleteRecipe(recipe.id);
+                                    }}
+                                    className="p-2 bg-slate-800 rounded-full hover:bg-slate-700 text-red-400 shadow-lg"
+                                >
+                                    <Trash className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
                     ))
                 ) : (
                     <div className="text-center py-12">
@@ -133,6 +185,23 @@ function RecipeList({ currentProfile }) {
                     </div>
                 )}
             </div>
+
+            {/* Editor Modal */}
+            {(isCreating || editingRecipe) && (
+                <div className="modal-overlay">
+                    <div className="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <RecipeEditor
+                            initialRecipe={editingRecipe}
+                            onSave={handleSaveAndClose}
+                            onCancel={() => {
+                                setEditingRecipe(null);
+                                setIsCreating(false);
+                            }}
+                            apiKey={apiKey}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

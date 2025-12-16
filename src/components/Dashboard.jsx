@@ -11,10 +11,12 @@ import {
     Leaf,
     AlertCircle,
     Play,
-    RotateCcw
+    RotateCcw,
+    CheckCircle2
 } from 'lucide-react';
-import { recipes, getRecipeById, weekDays } from '../data/recipes';
+import { weekDays } from '../data/recipes';
 import RecipeCard from './RecipeCard';
+import RecipeEditor from './RecipeEditor';
 
 function Dashboard({
     currentUser,
@@ -23,9 +25,13 @@ function Dashboard({
     dayNumber,
     startDate,
     setStartDate,
-    setWeeklyPlan
+    setWeeklyPlan,
+    allRecipes,
+    handleConsumption,
+    apiKey
 }) {
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [consumingRecipe, setConsumingRecipe] = useState(null);
 
     // Obtener el día de la semana actual (0-6, donde 0 es Lunes)
     const today = new Date();
@@ -101,6 +107,16 @@ function Dashboard({
         }
     };
 
+    const startConsumption = (recipe) => {
+        setConsumingRecipe(recipe);
+    };
+
+    const confirmConsumption = (finalRecipe) => {
+        handleConsumption(finalRecipe);
+        setConsumingRecipe(null);
+        alert("¡Consumo registrado!");
+    };
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Hero Card - Día Actual */}
@@ -124,8 +140,8 @@ function Dashboard({
                         <div
                             key={i}
                             className={`h-2 flex-1 rounded-full transition-all duration-300 ${i < dayNumber
-                                    ? 'bg-emerald-500'
-                                    : 'bg-slate-700'
+                                ? 'bg-emerald-500'
+                                : 'bg-slate-700'
                                 }`}
                         />
                     ))}
@@ -188,8 +204,8 @@ function Dashboard({
                                 <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-500 ${isOver && label === 'Carbos'
-                                                ? 'bg-red-500'
-                                                : `bg-${color}-500`
+                                            ? 'bg-red-500'
+                                            : `bg-${color}-500`
                                             }`}
                                         style={{ width: `${percentage}%` }}
                                     />
@@ -228,7 +244,7 @@ function Dashboard({
                 </div>
 
                 {todayPlan ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {/* Desayuno fijo */}
                         <div className="glass-card p-4 opacity-70">
                             <div className="flex items-center gap-3">
@@ -243,22 +259,38 @@ function Dashboard({
 
                         {/* Almuerzo */}
                         {todayPlan.lunch && (
-                            <RecipeCard
-                                recipe={todayPlan.lunch}
-                                mealType="Almuerzo"
-                                compact
-                                currentProfile={currentProfile}
-                            />
+                            <div className="relative">
+                                <RecipeCard
+                                    recipe={todayPlan.lunch}
+                                    mealType="Almuerzo"
+                                    compact
+                                    currentProfile={currentProfile}
+                                />
+                                <button
+                                    onClick={() => startConsumption(todayPlan.lunch)}
+                                    className="absolute bottom-4 right-4 btn btn-primary text-xs py-1 px-3 shadow-lg flex items-center gap-1 z-10"
+                                >
+                                    <CheckCircle2 className="w-3 h-3" /> Consumir
+                                </button>
+                            </div>
                         )}
 
                         {/* Cena */}
                         {todayPlan.dinner && (
-                            <RecipeCard
-                                recipe={todayPlan.dinner}
-                                mealType="Cena"
-                                compact
-                                currentProfile={currentProfile}
-                            />
+                            <div className="relative">
+                                <RecipeCard
+                                    recipe={todayPlan.dinner}
+                                    mealType="Cena"
+                                    compact
+                                    currentProfile={currentProfile}
+                                />
+                                <button
+                                    onClick={() => startConsumption(todayPlan.dinner)}
+                                    className="absolute bottom-4 right-4 btn btn-primary text-xs py-1 px-3 shadow-lg flex items-center gap-1 z-10"
+                                >
+                                    <CheckCircle2 className="w-3 h-3" /> Consumir
+                                </button>
+                            </div>
                         )}
                     </div>
                 ) : (
@@ -279,7 +311,7 @@ function Dashboard({
                         <span className="text-2xl group-hover:scale-110 transition-transform">📖</span>
                         <div>
                             <p className="font-medium">Recetas</p>
-                            <p className="text-xs text-gray-400">{recipes.length} disponibles</p>
+                            <p className="text-xs text-gray-400">{allRecipes.length} disponibles</p>
                         </div>
                     </div>
                 </Link>
@@ -294,6 +326,20 @@ function Dashboard({
                     </div>
                 </Link>
             </div>
+
+            {/* Consumption Modal */}
+            {consumingRecipe && (
+                <div className="modal-overlay">
+                    <div className="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <RecipeEditor
+                            initialRecipe={consumingRecipe}
+                            onSave={confirmConsumption}
+                            onCancel={() => setConsumingRecipe(null)}
+                            apiKey={apiKey}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
