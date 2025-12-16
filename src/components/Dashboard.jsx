@@ -17,6 +17,7 @@ import {
 import { weekDays } from '../data/recipes';
 import RecipeCard from './RecipeCard';
 import RecipeEditor from './RecipeEditor';
+import Modal from './Modal';
 
 function Dashboard({
     currentUser,
