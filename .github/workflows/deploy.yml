@@ -16,6 +16,8 @@ jobs:
       run: npm ci
     - name: Build 🏗️
       run: npm run build
+      env:
+        VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
     - name: Deploy to Namecheap via SFTP 🚀
       uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
