@@ -315,17 +315,17 @@ function RecipeEditor({
                         <div key={idx} className="flex gap-2">
                             <input
                                 placeholder="Ingrediente"
-                                value={ing.item}
+                                value={ing.item || ''}
                                 onChange={(e) => handleIngredientChange(idx, 'item', e.target.value)}
-                                className="input flex-1"
+                                className="input flex-grow min-w-0"
                             />
                             <input
-                                placeholder="Cant."
-                                value={ing.amount}
+                                placeholder="Cantidad"
+                                value={ing.amount || ''}
                                 onChange={(e) => handleIngredientChange(idx, 'amount', e.target.value)}
-                                className="input w-20"
+                                className="input w-24 flex-shrink-0"
                             />
-                            <button onClick={() => removeIngredient(idx)} className="text-red-400 p-2">
+                            <button onClick={() => removeIngredient(idx)} className="text-red-400 p-2 flex-shrink-0">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
