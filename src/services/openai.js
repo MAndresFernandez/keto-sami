@@ -1,3 +1,54 @@
+// Helper function to normalize ingredients
+const normalizeIngredient = (ing) => {
+    const itemKeys = ['item', 'name', 'ingredient', 'ingrediente', 'nombre', 'producto', 'descripcion'];
+    const amountKeys = ['amount', 'quantity', 'cantidad', 'cant', 'qty'];
+
+    let itemValue = '';
+    let amountValue = '';
+
+    // Buscar item en keys conocidas
+    for (const key of itemKeys) {
+        if (ing[key] && typeof ing[key] === 'string') {
+            itemValue = ing[key];
+            break;
+        }
+    }
+
+    // Buscar amount en keys conocidas
+    for (const key of amountKeys) {
+        if (ing[key] && typeof ing[key] === 'string') {
+            amountValue = ing[key];
+            break;
+        }
+    }
+
+    // Si no encontró item, buscar cualquier string que no parezca cantidad
+    if (!itemValue) {
+        for (const [key, value] of Object.entries(ing)) {
+            if (typeof value === 'string' && !amountKeys.includes(key) && !/^\d/.test(value)) {
+                itemValue = value;
+                break;
+            }
+        }
+    }
+
+    // Si no encontró amount, buscar cualquier string que empiece con número
+    if (!amountValue) {
+        for (const [key, value] of Object.entries(ing)) {
+            if (typeof value === 'string' && /^\d/.test(value)) {
+                amountValue = value;
+                break;
+            }
+        }
+    }
+
+    return {
+        item: itemValue,
+        amount: amountValue,
+        category: ing.category || ing.categoria || 'Almacén'
+    };
+};
+
 export const generateRecipeFromImage = async (base64Image) => {
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     if (!apiKey) throw new Error("Falta configuración de API Key en el servidor (.env.local)");
@@ -14,22 +65,22 @@ export const generateRecipeFromImage = async (base64Image) => {
     4. Categoriza en: carnes, vegetales, ensaladas, huevos, panadería, acompañamientos.
     5. Estima los macros por porción.
     
-    Formato JSON requerido:
+    Formato JSON requerido (USA EXACTAMENTE ESTOS NOMBRES DE CAMPOS):
     {
-      "name": "Nombre del plato (Argentino si aplica)",
+      "name": "Nombre del plato",
       "category": "una de las categorias",
-      "image": "emoji que represente el plato",
-      "prepTime": numero_minutos,
-      "servings": numero_porciones,
-      "isHiddenVegFriendly": boolean,
+      "image": "emoji",
+      "prepTime": numero,
+      "servings": numero,
+      "isHiddenVegFriendly": true o false,
       "macros": {
         "calories": numero,
-        "fat": numero_gramos,
-        "protein": numero_gramos,
-        "carbs": numero_gramos
+        "fat": numero,
+        "protein": numero,
+        "carbs": numero
       },
       "ingredients": [
-        { "item": "nombre del ingrediente", "amount": "cantidad y unidad", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
+        { "item": "nombre del ingrediente", "amount": "cantidad con unidad" }
       ],
       "instructions": [
         "paso 1", "paso 2"
@@ -74,13 +125,11 @@ export const generateRecipeFromImage = async (base64Image) => {
         const content = data.choices[0].message.content;
         const parsed = JSON.parse(content);
 
+        console.log('AI Response (Image):', JSON.stringify(parsed, null, 2));
+
         // Normalizar ingredientes
-        if (parsed.ingredients) {
-            parsed.ingredients = parsed.ingredients.map(ing => ({
-                item: ing.item || ing.name || ing.ingredient || ing.ingrediente || ing.nombre || '',
-                amount: ing.amount || ing.quantity || ing.cantidad || ing.cant || '',
-                category: ing.category || ing.categoria || 'Almacén'
-            }));
+        if (parsed.ingredients && Array.isArray(parsed.ingredients)) {
+            parsed.ingredients = parsed.ingredients.map(normalizeIngredient);
         }
 
         return parsed;
@@ -98,22 +147,19 @@ export const generateRecipeFromText = async (description) => {
     const prompt = `
     Genera una receta Keto completa basada en esta descripción: "${description}".
     
-    Reglas importantes y rol de experto:
+    Reglas importantes:
     1. Actúa como nutricionista experto en Keto.
-    2. Calcula/Estima los MACROS (Kcal, Grasa, Proteínas, Carbos) para UNA porción promedio de este plato.
-    3. Si la descripción es vaga (ej: "pollo con crema"), asume una receta estándar keto-friendly.
-    4. Determina 'isHiddenVegFriendly':
-       - TRUE si NO tiene hojas crudas y los vegetales están cocidos.
-       - FALSE si incluye ensalada cruda.
+    2. Calcula/Estima los MACROS para UNA porción.
+    3. Si la descripción es vaga, asume una receta estándar keto-friendly.
     
-    Formato JSON Requerido (responde SOLO con esto):
+    Formato JSON Requerido (USA EXACTAMENTE ESTOS NOMBRES DE CAMPOS):
     {
-      "name": "Nombre atractivo del plato",
+      "name": "Nombre del plato",
       "category": "carnes|vegetales|ensaladas|huevos|panadería|acompañamientos",
-      "image": "emoji relacionado",
-      "prepTime": minutos_estimados,
+      "image": "emoji",
+      "prepTime": numero,
       "servings": 1, 
-      "isHiddenVegFriendly": boolean,
+      "isHiddenVegFriendly": true o false,
       "macros": {
         "calories": numero,
         "fat": numero,
@@ -121,7 +167,7 @@ export const generateRecipeFromText = async (description) => {
         "carbs": numero
       },
       "ingredients": [
-        { "item": "nombre del ingrediente", "amount": "cantidad", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
+        { "item": "nombre del ingrediente", "amount": "cantidad" }
       ],
       "instructions": [
         "Paso 1", "Paso 2"
@@ -141,7 +187,7 @@ export const generateRecipeFromText = async (description) => {
                 messages: [
                     {
                         role: "system",
-                        content: "Eres un asistente experto en cocina Keto y nutrición."
+                        content: "Eres un asistente experto en cocina Keto. Responde SOLO con JSON válido usando exactamente los campos especificados."
                     },
                     {
                         role: "user",
@@ -162,13 +208,11 @@ export const generateRecipeFromText = async (description) => {
         const content = data.choices[0].message.content;
         const parsed = JSON.parse(content);
 
+        console.log('AI Response (Text):', JSON.stringify(parsed, null, 2));
+
         // Normalizar ingredientes
-        if (parsed.ingredients) {
-            parsed.ingredients = parsed.ingredients.map(ing => ({
-                item: ing.item || ing.name || ing.ingredient || ing.ingrediente || ing.nombre || '',
-                amount: ing.amount || ing.quantity || ing.cantidad || ing.cant || '',
-                category: ing.category || ing.categoria || 'Almacén'
-            }));
+        if (parsed.ingredients && Array.isArray(parsed.ingredients)) {
+            parsed.ingredients = parsed.ingredients.map(normalizeIngredient);
         }
 
         return parsed;
