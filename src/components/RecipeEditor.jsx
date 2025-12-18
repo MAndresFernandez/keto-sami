@@ -312,20 +312,22 @@ function RecipeEditor({
                 </div>
                 <div className="space-y-2">
                     {recipe.ingredients.map((ing, idx) => (
-                        <div key={idx} className="flex gap-2">
+                        <div key={idx} className="flex gap-2 items-center">
                             <input
                                 placeholder="Ingrediente"
                                 value={ing.item || ''}
                                 onChange={(e) => handleIngredientChange(idx, 'item', e.target.value)}
-                                className="input flex-grow min-w-0"
+                                className="input"
+                                style={{ flex: '2 1 60%' }}
                             />
                             <input
                                 placeholder="Cantidad"
                                 value={ing.amount || ''}
                                 onChange={(e) => handleIngredientChange(idx, 'amount', e.target.value)}
-                                className="input w-24 flex-shrink-0"
+                                className="input"
+                                style={{ flex: '1 1 30%' }}
                             />
-                            <button onClick={() => removeIngredient(idx)} className="text-red-400 p-2 flex-shrink-0">
+                            <button onClick={() => removeIngredient(idx)} className="text-red-400 p-2">
                                 <Trash2 className="w-4 h-4" />
                             </button>
                         </div>
