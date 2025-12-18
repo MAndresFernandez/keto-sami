@@ -29,7 +29,7 @@ export const generateRecipeFromImage = async (base64Image) => {
         "carbs": numero_gramos
       },
       "ingredients": [
-        { "item": "nombre ingrediente", "amount": "cantidad", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
+        { "item": "nombre del ingrediente", "amount": "cantidad y unidad", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
       ],
       "instructions": [
         "paso 1", "paso 2"
@@ -72,7 +72,18 @@ export const generateRecipeFromImage = async (base64Image) => {
         }
 
         const content = data.choices[0].message.content;
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+
+        // Normalizar ingredientes
+        if (parsed.ingredients) {
+            parsed.ingredients = parsed.ingredients.map(ing => ({
+                item: ing.item || ing.name || ing.ingredient || '',
+                amount: ing.amount || ing.quantity || '',
+                category: ing.category || 'Almacén'
+            }));
+        }
+
+        return parsed;
 
     } catch (error) {
         console.error("Error generating recipe:", error);
@@ -110,7 +121,7 @@ export const generateRecipeFromText = async (description) => {
         "carbs": numero
       },
       "ingredients": [
-        { "item": "ingrediente", "amount": "cantidad (ej: 200g)", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
+        { "item": "nombre del ingrediente", "amount": "cantidad", "category": "Carnicería/Verdulería/Lácteos/Almacén" }
       ],
       "instructions": [
         "Paso 1", "Paso 2"
@@ -149,7 +160,18 @@ export const generateRecipeFromText = async (description) => {
         }
 
         const content = data.choices[0].message.content;
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+
+        // Normalizar ingredientes
+        if (parsed.ingredients) {
+            parsed.ingredients = parsed.ingredients.map(ing => ({
+                item: ing.item || ing.name || ing.ingredient || '',
+                amount: ing.amount || ing.quantity || '',
+                category: ing.category || 'Almacén'
+            }));
+        }
+
+        return parsed;
 
     } catch (error) {
         console.error("Error generating recipe from text:", error);
