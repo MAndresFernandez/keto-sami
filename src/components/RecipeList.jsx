@@ -18,8 +18,7 @@ function RecipeList({
     currentProfile,
     allRecipes,
     handleSaveRecipe,
-    handleDeleteRecipe,
-    apiKey
+    handleDeleteRecipe
 }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -203,7 +202,6 @@ function RecipeList({
                             setEditingRecipe(null);
                             setIsCreating(false);
                         }}
-                        apiKey={apiKey}
                     />
                 </Modal>
             )}

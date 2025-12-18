@@ -1,5 +1,6 @@
-export const generateRecipeFromImage = async (base64Image, apiKey) => {
-    if (!apiKey) throw new Error("API Key faltante");
+export const generateRecipeFromImage = async (base64Image) => {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) throw new Error("Falta configuración de API Key en el servidor (.env.local)");
 
     const prompt = `
     Analiza esta imagen de comida y genera una receta Keto estructurada en JSON.
@@ -79,8 +80,9 @@ export const generateRecipeFromImage = async (base64Image, apiKey) => {
     }
 };
 
-export const generateRecipeFromText = async (description, apiKey) => {
-    if (!apiKey) throw new Error("API Key faltante");
+export const generateRecipeFromText = async (description) => {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) throw new Error("Falta configuración de API Key en el servidor (.env.local)");
 
     const prompt = `
     Genera una receta Keto completa basada en esta descripción: "${description}".

@@ -13,8 +13,7 @@ import { generateRecipeFromImage } from '../services/openai';
 function RecipeEditor({
     initialRecipe = null,
     onSave,
-    onCancel,
-    apiKey
+    onCancel
 }) {
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
@@ -36,10 +35,7 @@ function RecipeEditor({
         const file = e.target.files[0];
         if (!file) return;
 
-        if (!apiKey) {
-            alert("Por favor configura tu API Key primero en Configuración (icono ⚙️ en Dashboard no implementado aún, pero ya la tengo guardada).");
-            return;
-        }
+        if (!file) return;
 
         setLoading(true);
         try {
@@ -48,7 +44,7 @@ function RecipeEditor({
             reader.onloadend = async () => {
                 const base64String = reader.result;
                 try {
-                    const aiRecipe = await generateRecipeFromImage(base64String, apiKey);
+                    const aiRecipe = await generateRecipeFromImage(base64String);
                     setRecipe(prev => ({
                         ...prev,
                         ...aiRecipe,
@@ -163,16 +159,11 @@ function RecipeEditor({
                                     const text = document.getElementById('magic-text-input').value;
                                     if (!text) return;
 
-                                    if (!apiKey) {
-                                        alert("Falta API Key");
-                                        return;
-                                    }
-
                                     setLoading(true);
                                     try {
                                         // Dynamic import to avoid circular dependencies if any
                                         const { generateRecipeFromText } = await import('../services/openai');
-                                        const aiRecipe = await generateRecipeFromText(text, apiKey);
+                                        const aiRecipe = await generateRecipeFromText(text);
                                         setRecipe(prev => ({
                                             ...prev,
                                             ...aiRecipe,

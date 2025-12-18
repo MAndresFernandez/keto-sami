@@ -28,8 +28,7 @@ function Dashboard({
     setStartDate,
     setWeeklyPlan,
     allRecipes,
-    handleConsumption,
-    apiKey
+    handleConsumption
 }) {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [consumingRecipe, setConsumingRecipe] = useState(null);
@@ -338,7 +337,6 @@ function Dashboard({
                         initialRecipe={consumingRecipe}
                         onSave={confirmConsumption}
                         onCancel={() => setConsumingRecipe(null)}
-                        apiKey={apiKey}
                     />
                 </Modal>
             )}
