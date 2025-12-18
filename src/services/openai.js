@@ -77,9 +77,9 @@ export const generateRecipeFromImage = async (base64Image) => {
         // Normalizar ingredientes
         if (parsed.ingredients) {
             parsed.ingredients = parsed.ingredients.map(ing => ({
-                item: ing.item || ing.name || ing.ingredient || '',
-                amount: ing.amount || ing.quantity || '',
-                category: ing.category || 'Almacén'
+                item: ing.item || ing.name || ing.ingredient || ing.ingrediente || ing.nombre || '',
+                amount: ing.amount || ing.quantity || ing.cantidad || ing.cant || '',
+                category: ing.category || ing.categoria || 'Almacén'
             }));
         }
 
@@ -165,9 +165,9 @@ export const generateRecipeFromText = async (description) => {
         // Normalizar ingredientes
         if (parsed.ingredients) {
             parsed.ingredients = parsed.ingredients.map(ing => ({
-                item: ing.item || ing.name || ing.ingredient || '',
-                amount: ing.amount || ing.quantity || '',
-                category: ing.category || 'Almacén'
+                item: ing.item || ing.name || ing.ingredient || ing.ingrediente || ing.nombre || '',
+                amount: ing.amount || ing.quantity || ing.cantidad || ing.cant || '',
+                category: ing.category || ing.categoria || 'Almacén'
             }));
         }
 
